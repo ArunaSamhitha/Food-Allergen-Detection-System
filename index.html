@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Allergy Checker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+                margin: 0;
+                font-family: 'Roboto', sans-serif;
+                background: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
+                background-size: cover;
+                position: relative;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+            }
+
+
+            .container {
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 16px;
+                padding: 2.5rem;
+                box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+                width: 100%;
+                max-width: 500px;
+                text-align: center;
+                backdrop-filter: blur(10px);
+            }
+
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        p.description {
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            color: #555;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 0.5rem auto 1rem;
+            padding: 0.4rem;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 0.7rem 1.4rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #imagePreview img {
+            max-width: 100%;
+            margin-top: 1rem;
+            border-radius: 8px;
+        }
+
+        #result {
+            margin-top: 1.5rem;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        #result.safe {
+            color: #28a745;
+        }
+
+        #result.unsafe {
+            color: #dc3545;
+        }
+
+        #loader {
+            margin-top: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Food Allergy Checker</h1>
+        <p class="description">Upload an image of the food label to check if it's safe for your allergies.</p>
+
+        <form id="imageForm">
+            <input type="file" id="imageInput" name="image" accept="image/*" required>
+            <button type="submit">Analyze Image</button>
+        </form>
+
+        <div id="imagePreview"></div>
+        <div id="loader">🔄 Analyzing image...</div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById("imageForm");
+        const imageInput = document.getElementById("imageInput");
+        const imagePreview = document.getElementById("imagePreview");
+        const result = document.getElementById("result");
+        const loader = document.getElementById("loader");
+
+        imageInput.addEventListener("change", () => {
+            const file = imageInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            result.textContent = "";
+            result.className = "";
+            loader.style.display = "block";
+
+            const file = imageInput.files[0];
+            if (!file) {
+                loader.style.display = "none";
+                result.textContent = "Please select an image file.";
+                result.className = "unsafe";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("image", file);
+
+            try {
+                const response = await fetch("http://localhost:8000/analyze_image", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+                loader.style.display = "none";
+
+                if (response.ok && data.result) {
+                    result.textContent = data.result;
+                    result.className = data.result.toLowerCase().includes("not safe") ? "unsafe" : "safe";
+                } else {
+                    result.textContent = "Could not analyze the image. Try again.";
+                    result.className = "unsafe";
+                }
+            } catch (error) {
+                console.error(error);
+                loader.style.display = "none";
+                result.textContent = "An error occurred. Please try again.";
+                result.className = "unsafe";
+            }
+        });
+    </script>
+</body>
+</html>

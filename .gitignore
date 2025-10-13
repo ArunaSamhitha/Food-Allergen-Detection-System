@@ -1,0 +1,7 @@
+myenv/
+__pycache__/
+*.pyc
+*.log
+.env
+temp_image.jpg
+video*.mp4
