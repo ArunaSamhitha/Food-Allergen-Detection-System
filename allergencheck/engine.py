@@ -5,7 +5,7 @@ words on the label that caused it, so a result can be checked by a person.
 """
 import re
 from dataclasses import asdict, dataclass, field
-from functools import lru_cache
+from functools import cache
 from typing import Literal
 
 from .parser import ParsedLabel, parse_label
@@ -62,7 +62,7 @@ def _phrase_pattern(phrase: str) -> str:
     return r"(?<![a-z])" + r"[\s\-]+".join(map(re.escape, phrase.split())) + r"(?![a-z])"
 
 
-@lru_cache(maxsize=None)
+@cache
 def _compiled(key: str):
     cat = CATEGORIES[key]
     terms = sorted(cat.terms, key=len, reverse=True)
@@ -130,7 +130,7 @@ def analyze(raw_text: str, profile: Profile) -> Report:
     for word in profile.custom:
         for source, chunks in sections:
             for chunk in chunks:
-                for text in _custom_hits(word, chunk):
+                for _ in _custom_hits(word, chunk):
                     findings.append(Finding(f"custom:{word.lower()}", word, word.lower(), chunk, source))
 
     findings = _dedupe(findings)
@@ -138,15 +138,17 @@ def analyze(raw_text: str, profile: Profile) -> Report:
     avoided = set(profile.avoid)
     other = []
     for key, cat in CATEGORIES.items():
-        if cat.kind == "allergen" and key not in avoided:
-            if any(_match_category(key, c) for src, chunks in sections[:2] for c in chunks):
-                other.append(cat.label)
+        if (cat.kind == "allergen" and key not in avoided
+                and any(_match_category(key, c) for _, chunks in sections[:2] for c in chunks)):
+            other.append(cat.label)
 
     checks = []
     for item in parsed.ingredients:
-        for phrase, (relevant, reason) in AMBIGUOUS.items():
-            if re.search(_phrase_pattern(phrase), item) and (relevant == "any" or relevant in avoided):
-                checks.append(Check(item, reason, relevant))
+        checks.extend(
+            Check(item, reason, relevant)
+            for phrase, (relevant, reason) in AMBIGUOUS.items()
+            if re.search(_phrase_pattern(phrase), item) and (relevant == "any" or relevant in avoided)
+        )
 
     verdict, summary = _verdict(findings, checks, parsed, raw_text)
     return Report(verdict, summary, findings, other, checks, parsed.ingredients, parsed.precautions,

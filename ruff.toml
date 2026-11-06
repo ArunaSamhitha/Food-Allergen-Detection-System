@@ -1,1 +1,7 @@
 line-length = 120
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "W", "B", "UP", "SIM"]
+# FastAPI's File()/Form() defaults are the framework's documented pattern.
+ignore = ["B008", "SIM905"]
