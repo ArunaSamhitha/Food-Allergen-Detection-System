@@ -34,7 +34,7 @@ def read_label(image_bytes: bytes) -> OcrResult:
     processed = preprocess(image_bytes)
     data = pytesseract.image_to_data(processed, config="--oem 3 --psm 6", output_type=pytesseract.Output.DICT)
     words, confs = [], []
-    for word, conf in zip(data["text"], data["conf"]):
+    for word, conf in zip(data["text"], data["conf"], strict=True):
         conf = float(conf)
         if word.strip() and conf >= 0:
             words.append(word)

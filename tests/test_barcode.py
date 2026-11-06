@@ -4,7 +4,7 @@ import pytest
 
 httpx = pytest.importorskip("httpx")
 
-from allergencheck import barcode
+from allergencheck import barcode  # noqa: E402
 
 
 def run(handler, code="0123456789012"):

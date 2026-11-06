@@ -67,7 +67,8 @@ def _compiled(key: str):
     cat = CATEGORIES[key]
     terms = sorted(cat.terms, key=len, reverse=True)
     include = re.compile("|".join(f"(?P<t{i}>{_phrase_pattern(t)})" for i, t in enumerate(terms)))
-    exclude = re.compile("|".join(_phrase_pattern(t) for t in sorted(cat.exclude, key=len, reverse=True))) if cat.exclude else None
+    longest_first = sorted(cat.exclude, key=len, reverse=True)
+    exclude = re.compile("|".join(_phrase_pattern(t) for t in longest_first)) if cat.exclude else None
     single_words = tuple(t for t in cat.terms if " " not in t and len(t) >= 5)
     return terms, include, exclude, single_words
 
@@ -125,7 +126,7 @@ def analyze(raw_text: str, profile: Profile) -> Report:
         cat = CATEGORIES[key]
         for source, chunks in sections:
             for chunk in chunks:
-                for term, text, fuzzy in _match_category(key, chunk):
+                for term, _text, fuzzy in _match_category(key, chunk):
                     findings.append(Finding(key, cat.label, term, chunk, source, fuzzy))
     for word in profile.custom:
         for source, chunks in sections:

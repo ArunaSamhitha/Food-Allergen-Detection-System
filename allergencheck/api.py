@@ -120,9 +120,10 @@ async def analyze_barcode(code: str, avoid: str = "", custom: str = ""):
     try:
         product = await barcode.lookup(code)
     except barcode.ProductNotFound:
-        raise HTTPException(404, "That barcode isn't in Open Food Facts yet. Try a photo of the label instead.")
+        msg = "That barcode isn't in Open Food Facts yet. Try a photo of the label instead."
+        raise HTTPException(404, msg) from None
     except ValueError as exc:
-        raise HTTPException(422, str(exc))
+        raise HTTPException(422, str(exc)) from exc
     if not product.ingredients_text:
         raise HTTPException(404, "Found the product, but it has no ingredient list. Try a photo of the label.")
     report = analyze(product.ingredients_text, prof.to_profile())
