@@ -33,7 +33,7 @@ def extract_text_from_image(image_path):
 
 # Set up the RAG pipeline
 def setup_rag():
-    loader = TextLoader("food_prefernces.txt")
+    loader = TextLoader("food_preferences.txt")
     documents = loader.load()
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
     texts = text_splitter.split_documents(documents)

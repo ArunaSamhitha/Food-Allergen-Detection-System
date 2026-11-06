@@ -1,7 +1,7 @@
-myenv/
+.DS_Store
+.env
 __pycache__/
 *.pyc
-*.log
-.env
 temp_image.jpg
-video*.mp4
+venv/
+.venv/

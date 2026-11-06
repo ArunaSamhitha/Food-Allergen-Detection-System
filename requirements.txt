@@ -1,0 +1,9 @@
+flask
+flask-cors
+opencv-python
+pytesseract
+python-dotenv
+langchain
+langchain-community
+langchain-openai
+faiss-cpu
