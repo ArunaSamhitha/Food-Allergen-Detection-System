@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AllergenCheck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<main class="page">
+  <header>
+    <h1>AllergenCheck</h1>
+    <p class="lede">Check a food label against your allergies before you eat. Snap the ingredients, scan a barcode, or paste the text.</p>
+  </header>
+
+  <section class="panel" aria-labelledby="profile-h">
+    <div class="panel-head">
+      <h2 id="profile-h">I avoid</h2>
+      <span class="hint">Saved on this device</span>
+    </div>
+    <div id="cats" class="chips" role="group" aria-label="Allergens and diets to avoid"></div>
+    <label class="custom" for="custom">Anything else? <input id="custom" placeholder="e.g. kiwi, mustard" maxlength="200"></label>
+  </section>
+
+  <section class="panel">
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-photo" aria-selected="true" data-tab="photo">Photo</button>
+      <button role="tab" id="tab-barcode" aria-selected="false" data-tab="barcode">Barcode</button>
+      <button role="tab" id="tab-text" aria-selected="false" data-tab="text">Type it</button>
+    </div>
+
+    <form id="form-photo" class="tabpanel" data-panel="photo">
+      <label class="drop" for="photo">
+        <img id="preview" alt="" hidden>
+        <span id="drop-text">Take or choose a photo of the <b>ingredients</b> list</span>
+      </label>
+      <input id="photo" type="file" accept="image/*" capture="environment" hidden>
+      <button class="go" type="submit">Check label</button>
+    </form>
+
+    <form id="form-barcode" class="tabpanel" data-panel="barcode" hidden>
+      <label for="code">Barcode number</label>
+      <div class="row">
+        <input id="code" inputmode="numeric" pattern="\d{8,14}" placeholder="e.g. 3017620422003" required>
+        <button class="go" type="submit">Look up</button>
+      </div>
+      <p class="hint">Product data from Open Food Facts, a free community database.</p>
+    </form>
+
+    <form id="form-text" class="tabpanel" data-panel="text" hidden>
+      <label for="text">Ingredients</label>
+      <textarea id="text" rows="5" maxlength="10000" required>Ingredients: enriched flour (wheat flour, niacin), sugar, butter, eggs, natural flavors. May contain tree nuts.</textarea>
+      <button class="go" type="submit">Check ingredients</button>
+    </form>
+  </section>
+
+  <p id="status" class="status" role="status" aria-live="polite"></p>
+  <section id="result" hidden></section>
+
+  <footer>A screening aid, not medical advice. Labels change and OCR can misread. For severe allergies, always read the package yourself.</footer>
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>

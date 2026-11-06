@@ -1,0 +1,29 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get update && sudo apt-get install -y tesseract-ocr fonts-dejavu-core
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check allergencheck tests
+      - run: pytest -v
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t allergencheck .
+      - name: Smoke test the container
+        run: |
+          docker run -d -p 8000:8000 --name app allergencheck
+          for i in $(seq 1 20); do curl -fs localhost:8000/api/health && break; sleep 1; done
+          curl -fs -X POST localhost:8000/api/analyze/text -H 'Content-Type: application/json' \
+            -d '{"text":"Ingredients: sugar, peanuts.","profile":{"avoid":["peanut"]}}' | tee out.json
+          grep -q '"verdict":"unsafe"' out.json
